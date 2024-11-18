@@ -1,0 +1,2 @@
+ignores: ['pg-hstore','pino-pretty','vite','auto-changelog','depcheck','eslint','prettier','typescript','vite-node','@sequelize/sqlite3']
+skip-missing: true

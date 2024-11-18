@@ -1,0 +1,15 @@
+**/node_modules
+**/.DS_Store
+**/dist
+**/coverage
+**/*.log
+**/logfile
+**/.npmrc
+.netlify
+**/development.env
+**/.env
+**/production.env
+**/settings.*
+**/_backup
+**/google_storage.json
+**/.env.local
