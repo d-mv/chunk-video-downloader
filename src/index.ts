@@ -1,41 +1,30 @@
-#!/usr/bin/env node
-
-import { createWriteStream, readdirSync } from 'node:fs';
-import process from 'node:process';
-
-import { getArguments } from './arguments';
-import { addFile } from './async';
-import { checkExistingOutputFile } from './check';
-import { writeOnTheSameLine } from './log';
-
-const IGNORED_FILES = ['.DS_Store'];
+import { getArguments } from "./arguments";
+import { download } from "./downloader";
+import { readUrls } from "./readUrls";
+import { stitch } from "./stitch";
+import { validateArgPaths } from "./validateArgPaths";
 
 (async function main() {
   const args = getArguments();
 
-  await checkExistingOutputFile(args);
+  if (args.isErr()) {
+    console.error(args.unwrapErr().message, "\n");
+    process.exit(0);
+  } else {
+    await validateArgPaths(args.unwrap());
 
-  const fileNames: string[] = [];
+    const urls = await readUrls(args.unwrap().sourceFile);
 
-  readdirSync(args.sourceFolder).forEach(file => {
-    if (!IGNORED_FILES.includes(file)) fileNames.push(file);
-  });
+    const r = await download(urls, args.unwrap());
 
-  // eslint-disable-next-line no-console
-  console.log(`Found ${fileNames.length} files in ${args.sourceFolder}`);
+    await stitch(args.unwrap(), r);
 
-  const writableStream = createWriteStream(`${args.targetFolder}/${args.targetFileName}`);
-
-  const staticMessage = 'Processing file: ';
-
-  process.stdout.write(staticMessage);
-
-  for await (const fileName of fileNames.sort((a, b) => parseInt(a) - parseInt(b))) {
-    writeOnTheSameLine(staticMessage.length, fileName);
-    await addFile(`${args.sourceFolder}/${fileName}`, writableStream);
+    // eslint-disable-next-line no-console
+    console.log("All done.");
   }
-
-  // eslint-disable-next-line no-console
-  console.log(`\nI am done! Joined ${fileNames.length} files into ${args.targetFileName}`);
-  writableStream.end();
 })();
+
+// read urls from file (identify, verify)
+//  download to target folder
+//  join files
+//  remove source files

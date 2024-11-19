@@ -1,4 +1,4 @@
-import process from 'node:process';
+import process from "node:process";
 
 export function writeOnTheSameLine(index: number, text: string) {
   process.stdout.cursorTo(index);

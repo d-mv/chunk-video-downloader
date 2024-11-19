@@ -1,51 +1,70 @@
+import { Err, Ok, Result } from "@sniptt/monads";
+
 export type Args = {
-  sourceFolder: string;
+  sourceFile: string;
   targetFolder: string;
   targetFileName: string;
   overwrite: boolean;
 };
 
-const ARGUMENTS = ['-s', '-t', '-f', '-o'];
+const ARGUMENTS = ["-s", "-t", "-f", "-o"];
 
-export function getArguments(): Args {
-  const customArguments = process.argv.slice(2);
+export function getArguments(): Result<Args, Error> {
+  const externalArguments = process.argv.slice(2);
 
-  if (customArguments.length < 2) throw new Error('Not enough arguments');
+  if (externalArguments.length < 2) {
+    // eslint-disable-next-line no-console -- required
+    console.log(`
+    Usage: node index.js -s source-folder -t target-folder -f target-file-name -o, where:
 
-  const args: Args = { targetFileName: '', targetFolder: '', sourceFolder: '', overwrite: false };
+    -s - source file with links, required
+    -t - target folder
+    -f - target file name
+    -o - overwrite existing target file
 
-  const sourceFolderArgument = customArguments.indexOf('-s');
+    `);
 
-  if (sourceFolderArgument === -1) throw new Error('Source folder is not defined');
-
-  const targetFolderArgument = customArguments.indexOf('-t');
-
-  const targetFileNameArgument = customArguments.indexOf('-f');
-
-  const overwriteArgument = customArguments.indexOf('-o');
-
-  const sourceFolder = customArguments[sourceFolderArgument + 1];
-
-  if (sourceFolder) args.sourceFolder = sourceFolder;
-  else throw new Error('Source folder is not defined');
-
-  if (targetFolderArgument < 0) args.targetFolder = args.sourceFolder;
-  else {
-    const targetFolder = customArguments[targetFolderArgument + 1];
-
-    if (targetFolder && !ARGUMENTS.includes(targetFolder)) args.targetFolder = targetFolder;
-    else args.targetFolder = args.sourceFolder;
+    process.exit(0);
   }
 
-  if (targetFileNameArgument < 0) args.targetFileName = 'output.ts';
-  else {
-    const targetFileName = customArguments[targetFileNameArgument + 1];
+  const args: Args = {
+    targetFileName: "",
+    targetFolder: "",
+    sourceFile: "",
+    overwrite: false,
+  };
 
-    if (targetFileName && !ARGUMENTS.includes(targetFileName)) args.targetFileName = targetFileName;
-    else args.targetFileName = 'output.ts';
+  const sourceFileArgument = externalArguments.indexOf("-s");
+
+  if (sourceFileArgument === -1)
+    return Err(new Error("Source file is not defined"));
+  else args.sourceFile = externalArguments[sourceFileArgument + 1] ?? "";
+
+  const targetFolderArgument = externalArguments.indexOf("-t");
+
+  const targetFileNameArgument = externalArguments.indexOf("-f");
+
+  const overwriteArgument = externalArguments.indexOf("-o");
+
+  if (targetFolderArgument < 0)
+    return Err(new Error("Target folder is not defined"));
+  else {
+    const targetFolder = externalArguments[targetFolderArgument + 1];
+
+    if (targetFolder && !ARGUMENTS.includes(targetFolder))
+      args.targetFolder = targetFolder;
+  }
+
+  if (targetFileNameArgument < 0) args.targetFileName = "video.ts";
+  else {
+    const targetFileName = externalArguments[targetFileNameArgument + 1];
+
+    if (targetFileName && !ARGUMENTS.includes(targetFileName))
+      args.targetFileName = targetFileName;
+    else args.targetFileName = "video.ts";
   }
 
   if (overwriteArgument > 0) args.overwrite = true;
 
-  return args;
+  return Ok(args);
 }

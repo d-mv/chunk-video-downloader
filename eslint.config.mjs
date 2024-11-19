@@ -1,6 +1,6 @@
 import eslint from "@eslint/js";
 import globals from "globals";
-import tseslint from "typescript-eslint";
+import tslint from "typescript-eslint";
 // 3rd party
 import stylistic from "@stylistic/eslint-plugin";
 import eslintConfigPrettier from "eslint-config-prettier";
@@ -10,9 +10,9 @@ import eslintPluginPrettierRecommended from "eslint-plugin-prettier/recommended"
 import * as regexpPlugin from "eslint-plugin-regexp";
 import security from "eslint-plugin-security-node";
 
-export default tseslint.config(
+export default [
   eslint.configs.recommended,
-  ...tseslint.configs.recommended,
+  ...tslint.configs.recommended,
   eslintConfigPrettier,
   eslintPluginPrettierRecommended,
   regexpPlugin.configs["flat/recommended"],
@@ -134,5 +134,4 @@ export default tseslint.config(
       "eslint-comments/require-description": "error",
       "eslint-comments/no-unused-disable": "error",
     },
-  },
-);
+  }]
