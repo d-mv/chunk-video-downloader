@@ -11,13 +11,13 @@ import { validateArgPaths } from "./validateArgPaths";
     console.error(args.unwrapErr().message, "\n");
     process.exit(0);
   } else {
-    await validateArgPaths(args.unwrap());
+    const argsToUse = await validateArgPaths(args.unwrap());
 
-    const urls = await readUrls(args.unwrap().sourceFile);
+    const urls = await readUrls(argsToUse.sourceFile);
 
-    const r = await download(urls, args.unwrap());
+    const r = await download(urls, argsToUse);
 
-    await stitch(args.unwrap(), r);
+    await stitch(argsToUse, r);
 
     // eslint-disable-next-line no-console
     console.log("All done.");

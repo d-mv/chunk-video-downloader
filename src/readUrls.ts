@@ -1,34 +1,27 @@
-import { createReadStream } from "node:fs";
-import { URL } from "node:url";
+// @ts-ignore -- req
+import readline from "linebyline";
 
 export async function readUrls(sourceFile: string): Promise<string[]> {
   return new Promise((resolve) => {
     const urls: string[] = [];
 
-    const readStream = createReadStream(sourceFile, {
-      encoding: "utf8",
-      mode: 0o666, // 0o666 is the default value
-    }).on("data", (chunk: string) => {
-      const lines = chunk.split(/\r?\n/);
+    const rl = readline(sourceFile);
 
-      for (const line of lines) {
-        try {
-          const url = new URL(line);
+    rl.on("line", (line: string) => {
+      try {
+        new URL(line);
 
-          urls.push(url.toString());
-        } catch (_) {
-          continue;
-        }
-      }
+        urls.push(line.toString());
+      } catch (_) {}
     });
 
-    readStream.on("end", () => {
+    rl.on("end", () => {
       // eslint-disable-next-line no-console -- required
       console.log(`Found ${urls.length} URLs in the source file`);
       resolve(urls);
     });
 
-    readStream.on("error", (err) => {
+    rl.on("error", (err: unknown) => {
       console.error(err);
       process.exit(1);
     });

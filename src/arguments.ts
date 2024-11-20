@@ -46,9 +46,18 @@ export function getArguments(): Result<Args, Error> {
 
   const overwriteArgument = externalArguments.indexOf("-o");
 
-  if (targetFolderArgument < 0)
-    return Err(new Error("Target folder is not defined"));
-  else {
+  if (targetFolderArgument < 0) {
+    console.warn(
+      "Target folder is not defined, use sourcefile pathname as folder",
+    );
+
+    const folderName =
+      (args.sourceFile.split("/").pop() || "unknown") + "_video";
+
+    const path = args.sourceFile.split("/").slice(0, -1).join("/");
+
+    args.targetFolder = path + "/" + folderName;
+  } else {
     const targetFolder = externalArguments[targetFolderArgument + 1];
 
     if (targetFolder && !ARGUMENTS.includes(targetFolder))

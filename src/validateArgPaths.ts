@@ -1,43 +1,54 @@
-import { existsSync, mkdir, unlinkSync } from "fs";
+import { existsSync, mkdir, stat, unlinkSync } from "fs";
 import { Args } from "./arguments";
 
 export function validateArgPaths(args: Args) {
-  return new Promise((resolve) => {
-    const checkIfSourceFileExists = existsSync(`${args.sourceFile}`);
+  const argsToUse = args;
+
+  return new Promise<Args>((resolve) => {
+    const checkIfSourceFileExists = existsSync(`${argsToUse.sourceFile}`);
 
     // should exist!
     if (!checkIfSourceFileExists) {
-      console.error(`File ${args.sourceFile} does not exist`, "\n");
+      console.error(`File ${argsToUse.sourceFile} does not exist`, "\n");
       process.exit(1);
     }
 
-    const checkIfTargetFolderExists = existsSync(`${args.targetFolder}`);
+    stat(argsToUse.targetFolder, (err, stats) => {
+      if (err || !stats?.isDirectory()) {
+        console.warn(
+          `Folder ${argsToUse.targetFolder} does not exist, creating...`,
+          "\n",
+        );
 
-    if (!checkIfTargetFolderExists) {
-      console.warn(
-        `Folder ${args.targetFolder} does not exist, creating...`,
-        "\n",
-      );
+        // if (!stats.isDirectory()) {
+        //   const folderName =
+        //     (argsToUse.targetFolder.split("/").pop() || "unknown") + "_video";
 
-      mkdir(args.targetFolder, { recursive: true }, (err) => {
-        if (err) {
-          console.error(err);
-          process.exit(1);
-        }
-      });
-    }
+        //   const path = argsToUse.targetFolder.split("/").slice(0, -1).join("/");
+
+        //   argsToUse.targetFolder = path + "/" + folderName;
+        // }
+
+        mkdir(argsToUse.targetFolder, { recursive: true }, (err) => {
+          if (err) {
+            console.error(err);
+            process.exit(1);
+          }
+        });
+      }
+    });
 
     const checkIfTargetFileExists = existsSync(
-      `${args.targetFolder}/${args.targetFileName}`,
+      `${argsToUse.targetFolder}/${args.targetFileName}`,
     );
 
     //  should NOT exist
     if (checkIfTargetFileExists) {
-      if (args.overwrite) {
-        unlinkSync(`${args.targetFolder}/${args.targetFileName}`);
+      if (argsToUse.overwrite) {
+        unlinkSync(`${argsToUse.targetFolder}/${argsToUse.targetFileName}`);
       } else {
         console.error(
-          `File ${args.targetFileName} already exists in ${args.targetFolder} folder`,
+          `File ${argsToUse.targetFileName} already exists in ${argsToUse.targetFolder} folder`,
           "\n",
         );
 
@@ -45,6 +56,6 @@ export function validateArgPaths(args: Args) {
       }
     }
 
-    resolve(true);
+    resolve(argsToUse);
   });
 }
