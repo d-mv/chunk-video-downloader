@@ -9,7 +9,7 @@ let counter = 0;
 
 const staticMessage = "Progress: ";
 
-let urlsToDownload: string[] = [];
+const urlsToDownload: string[] = [];
 
 function anotherOne() {
   counter += 1;
@@ -22,10 +22,11 @@ function anotherOne() {
 async function downloadFile(
   fileUrl: string,
 ): Promise<AxiosResponse<AnyValue, unknown>> {
-  return await axios({
+  return axios({
     method: "get",
     url: fileUrl,
     responseType: "stream",
+    timeout: 4000,
   });
 }
 
@@ -39,37 +40,17 @@ function getPath(args: Args, url: string) {
 }
 
 export async function download(urls: string[], args: Args) {
-  // download promises
-  const promises: Promise<AxiosResponse<AnyValue, unknown>>[] = [];
-
-  // urls that have been added
-  const urlsAdded: string[] = [];
-
-  urlsToDownload = urls;
-
-  // create download promises
-  urlsToDownload.forEach((url) => {
-    promises.push(downloadFile(url));
-    urlsAdded.push(url);
-  });
-
-  const results = await Promise.all(promises);
-
-  // eslint-disable-next-line no-console -- required
-  console.log("Files downloaded.");
   process.stdout.write(staticMessage);
 
-  await Promise.all(
-    results.map((result, index) => {
-      return saveFile(
-        result,
-        getPath(args, String(urlsAdded[index])),
-        anotherOne,
-      );
-    }),
-  );
+  for await (const url of urls) {
+    const r = await downloadFile(url);
+
+    await saveFile(r, getPath(args, url), anotherOne);
+  }
 
   clearStaticMessaging();
+  // eslint-disable-next-line no-console -- required
+  console.log("Files downloaded.");
 
   // eslint-disable-next-line no-console -- required
   console.log("Files saved.");

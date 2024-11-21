@@ -23,8 +23,3 @@ import { validateArgPaths } from "./validateArgPaths";
     console.log("All done.");
   }
 })();
-
-// read urls from file (identify, verify)
-//  download to target folder
-//  join files
-//  remove source files
