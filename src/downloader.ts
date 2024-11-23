@@ -9,7 +9,7 @@ let counter = 0;
 
 const staticMessage = "Progress: ";
 
-const urlsToDownload: string[] = [];
+let urlsToDownload: string[] = [];
 
 function anotherOne() {
   counter += 1;
@@ -26,7 +26,7 @@ async function downloadFile(
     method: "get",
     url: fileUrl,
     responseType: "stream",
-    timeout: 4000,
+    timeout: 10000,
   });
 }
 
@@ -41,6 +41,7 @@ function getPath(args: Args, url: string) {
 
 export async function download(urls: string[], args: Args) {
   process.stdout.write(staticMessage);
+  urlsToDownload = urls;
 
   for await (const url of urls) {
     const r = await downloadFile(url);
@@ -51,9 +52,6 @@ export async function download(urls: string[], args: Args) {
   clearStaticMessaging();
   // eslint-disable-next-line no-console -- required
   console.log("Files downloaded.");
-
-  // eslint-disable-next-line no-console -- required
-  console.log("Files saved.");
 
   return urlsToDownload.map((url) => {
     return path.join(
